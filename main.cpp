@@ -1,8 +1,9 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <random>
 
-static inline void simualteWork(std::chrono::microseconds workPeriod)
+static inline void simulateWork(std::chrono::microseconds workPeriod)
 {
     volatile std::uint64_t dummy = 0;
     auto start = std::chrono::steady_clock::now();
@@ -21,26 +22,26 @@ int main()
     // Represents the target frame time for a 60 FPS update loop
     std::uint64_t target_us = 16666;
 
+    // Initialize random number generators
+    std::mt19937 rng(12345); // fixed seed for reproducible runs
+    std::uniform_int_distribution<int> normal_us(2000, 8000);
+    std::uniform_int_distribution<int> spike_us(12000, 25000);
+    std::bernoulli_distribution is_spike(0.05); // 5% chance
+
     for (int i = 0; i < 300; i++)
     {
         // Perform some work that takes time, simulating a frame update
         auto workStartAt = std::chrono::steady_clock::now();
-        std::chrono::microseconds workFor(5000); // Simulate work that takes approximately 5 ms
-        simualteWork(workFor);
+        const int work_us = is_spike(rng) ? spike_us(rng) : normal_us(rng);
+        simulateWork(std::chrono::microseconds(work_us));
         auto workEndAt = std::chrono::steady_clock::now();
         auto workDuration = std::chrono::duration_cast<std::chrono::microseconds>(workEndAt - workStartAt);
 
         // Calculate remaining time to sleep to maintain a consistent frame rate of 60 FPS
         auto remainingTime = std::chrono::microseconds(target_us) - workDuration;
+        // Sleep for the remaining time if the work took less than the target frame time
         if (remainingTime > std::chrono::microseconds::zero())
         {
-            constexpr auto spin_budget = std::chrono::microseconds(10000);
-            if (remainingTime > spin_budget)
-            {
-                // Sleep for the majority of the remaining time, leaving a small budget for spinning
-                std::this_thread::sleep_for(remainingTime - spin_budget);
-            }
-            // Spin the last bit (fine)
             while (std::chrono::steady_clock::now() - workStartAt < std::chrono::microseconds(target_us))
             {
                 // intentionally empty: tight wait for precision
