@@ -13,7 +13,7 @@ static inline void simulateWork(std::chrono::microseconds workPeriod)
     const auto endTime = Clock::now() + workPeriod;
 
     int iter = 0;
-    constexpr int CHECK_EVERY = 256; // check time every 1000 iterations to avoid excessive overhead
+    constexpr int CHECK_EVERY = 256; // check time every 256 iterations to avoid excessive overhead
     while (true)
     {
         // cheap operations to keep CPU busy
