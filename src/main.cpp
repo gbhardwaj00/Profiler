@@ -27,7 +27,7 @@ static inline void simulateWork(std::chrono::microseconds workPeriod)
     }
 }
 
-// Spins in a tight loop until the specified end time is reached, providing more precise timing than sleep-based waits
+// Spins in a tight loop until the specified end time is reached
 static inline void spinUntil(Clock::time_point endTime)
 {
     while (Clock::now() < endTime)
