@@ -2,25 +2,44 @@
 #include <chrono>
 #include <thread>
 #include <random>
+#include <cstdint>
 
+using Clock = std::chrono::steady_clock;
+
+// Simulates work by performing a busy-wait loop for the specified duration in microseconds
 static inline void simulateWork(std::chrono::microseconds workPeriod)
 {
     volatile std::uint64_t dummy = 0;
-    auto start = std::chrono::steady_clock::now();
+    const auto endTime = Clock::now() + workPeriod;
 
-    while (std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start) < workPeriod)
+    int iter = 0;
+    constexpr int CHECK_EVERY = 256; // check time every 1000 iterations to avoid excessive overhead
+    while (true)
     {
         // cheap operations to keep CPU busy
         dummy = dummy * 1664525u + 1013904223u;
         dummy ^= (dummy >> 13);
+        if ((++iter % CHECK_EVERY) == 0)
+        {
+            if (Clock::now() >= endTime)
+                break;
+        }
+    }
+}
+
+// Spins in a tight loop until the specified end time is reached, providing more precise timing than sleep-based waits
+static inline void spinUntil(Clock::time_point endTime)
+{
+    while (Clock::now() < endTime)
+    {
+        // tight wait
     }
 }
 
 int main()
 {
-    // 1/60th of a second in microseconds
-    // Represents the target frame time for a 60 FPS update loop
-    std::uint64_t target_us = 16666;
+    // ~60FPS
+    const std::chrono::microseconds target_us(16666);
 
     // Initialize random number generators
     std::mt19937 rng(12345); // fixed seed for reproducible runs
@@ -30,31 +49,30 @@ int main()
 
     for (int i = 0; i < 300; i++)
     {
-        // Perform some work that takes time, simulating a frame update
-        auto workStartAt = std::chrono::steady_clock::now();
-        const int work_us = is_spike(rng) ? spike_us(rng) : normal_us(rng);
-        simulateWork(std::chrono::microseconds(work_us));
-        auto workEndAt = std::chrono::steady_clock::now();
-        auto workDuration = std::chrono::duration_cast<std::chrono::microseconds>(workEndAt - workStartAt);
+        const auto frameStartAt = Clock::now();
+        const auto frameEndTarget = frameStartAt + target_us;
 
-        // Calculate remaining time to sleep to maintain a consistent frame rate of 60 FPS
-        auto remainingTime = std::chrono::microseconds(target_us) - workDuration;
-        // Sleep for the remaining time if the work took less than the target frame time
-        if (remainingTime > std::chrono::microseconds::zero())
+        const int plannedWorkUs = is_spike(rng) ? spike_us(rng) : normal_us(rng);
+        simulateWork(std::chrono::microseconds(plannedWorkUs));
+
+        const auto workEndAt = Clock::now();
+        const auto workDuration = std::chrono::duration_cast<std::chrono::microseconds>(workEndAt - frameStartAt);
+
+        if (workEndAt < frameEndTarget)
         {
-            while (std::chrono::steady_clock::now() - workStartAt < std::chrono::microseconds(target_us))
-            {
-                // intentionally empty: tight wait for precision
-            }
+            spinUntil(frameEndTarget);
         }
 
-        auto frameEndAt = std::chrono::steady_clock::now();
+        // Log the work duration and total elapsed time every 30 iterations
+        const auto frameEndAt = Clock::now();
+        const auto totalDuration = std::chrono::duration_cast<std::chrono::microseconds>(frameEndAt - frameStartAt);
 
         if (i % 30 == 0)
         {
-            std::cout << "Work Duration " << workDuration.count() / 1000.0 << " ms\n";
-            auto elapsed_us = std::chrono::duration_cast<std::chrono::microseconds>(frameEndAt - workStartAt);
-            std::cout << "Elapsed Time " << elapsed_us.count() / 1000.0 << " ms\n";
+            std::cout
+                << "Planned " << plannedWorkUs / 1000.0 << " ms | "
+                << "Work " << workDuration.count() / 1000.0 << " ms | "
+                << "Total " << totalDuration.count() / 1000.0 << " ms\n";
         }
     }
 
