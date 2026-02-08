@@ -52,21 +52,21 @@ int main()
         const auto frameStartAt = Clock::now();
         const auto frameEndTarget = frameStartAt + target_us;
 
+        // Simulate work with occaisonal spikes
         const int plannedWorkUs = is_spike(rng) ? spike_us(rng) : normal_us(rng);
         simulateWork(std::chrono::microseconds(plannedWorkUs));
-
         const auto workEndAt = Clock::now();
         const auto workDuration = std::chrono::duration_cast<std::chrono::microseconds>(workEndAt - frameStartAt);
 
+        // Spin if work finished early to maintain consistent frame timing
         if (workEndAt < frameEndTarget)
         {
             spinUntil(frameEndTarget);
         }
 
-        // Log the work duration and total elapsed time every 30 iterations
+        // Log every 30 frames
         const auto frameEndAt = Clock::now();
         const auto totalDuration = std::chrono::duration_cast<std::chrono::microseconds>(frameEndAt - frameStartAt);
-
         if (i % 30 == 0)
         {
             std::cout
