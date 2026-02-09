@@ -12,11 +12,6 @@ class ScopedTimer {
     Clock::time_point start;
 
 public:
-    ScopedTimer(const std::string& sectionName, FrameStats& stats) : sectionName(sectionName), stats(stats),
-    start(Clock::now()) {}
-    ~ScopedTimer() {
-        auto end = Clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-        stats.recordSection(sectionName, duration.count());
-    }
+    ScopedTimer(const std::string& sectionName, FrameStats& stats);
+    ~ScopedTimer();
 };

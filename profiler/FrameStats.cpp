@@ -93,3 +93,8 @@ size_t FrameStats::getCapacity() const {
 bool FrameStats::isFull() const {
     return count == frames.size();
 }
+
+FrameSample FrameStats::getFrame(size_t frameIndex) const {
+    size_t idx = frameIndex % bufferSize;
+    return frames[idx];
+}

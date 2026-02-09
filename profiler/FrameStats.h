@@ -47,4 +47,7 @@ public:
     size_t getWindowSize() const;
     size_t getCapacity() const;
     bool isFull() const;
+    
+    // Get frame data (for CSV export)
+    FrameSample getFrame(size_t frameIndex) const;  // Returns frame at given index (uses ring buffer)
 };

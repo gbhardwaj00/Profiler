@@ -1,11 +1,13 @@
 #include <iostream>
 #include <iomanip>
+#include <fstream>
 #include <chrono>
 #include <thread>
 #include <random>
 #include <cstdint>
 #include "../profiler/FrameStats.h"
 #include "../profiler/ScopedTimer.h"
+#include <fstream>
 
 using Clock = std::chrono::steady_clock;
 
@@ -44,6 +46,10 @@ int main()
     FrameStats stats;
     // ~60FPS
     const std::chrono::microseconds target_us(16666);
+    
+    // Open CSV file and write headers
+    std::ofstream csvFile("frame_stats.csv");
+    csvFile << "Frame,Work(ms),Total(ms),Input(ms),AI(ms),Physics(ms),Render(ms)\n";
 
     // Initialize random number generators
     std::mt19937 rng(12345); // fixed seed for reproducible runs
@@ -94,6 +100,23 @@ int main()
         const auto frameEndAt = Clock::now();
         const auto totalDuration = std::chrono::duration_cast<std::chrono::microseconds>(frameEndAt - frameStartAt);
         stats.addSample(workDuration.count(), totalDuration.count(), i);
+        
+        // Write to CSV (continuous export)
+        const auto& frame = stats.getFrame(i);
+        csvFile << std::fixed << std::setprecision(2);
+        csvFile << frame.frameIndex << ","
+                << frame.workDuration / 1000.0 << ","
+                << frame.totalDuration / 1000.0 << ",";
+        double inputMs = 0.0, aiMs = 0.0, physicsMs = 0.0, renderMs = 0.0;
+        for (const auto& section : frame.sections) {
+            if (section.name == "Input") inputMs = section.duration / 1000.0;
+            else if (section.name == "AI") aiMs = section.duration / 1000.0;
+            else if (section.name == "Physics") physicsMs = section.duration / 1000.0;
+            else if (section.name == "Render") renderMs = section.duration / 1000.0;
+        }
+        csvFile << inputMs << "," << aiMs << "," << physicsMs << "," << renderMs << "\n";
+        
+        // Print stats every 30 frames or at the end
         if (i % 30 == 0 || i == 299)
         {
             std::cout << std::fixed << std::setprecision(2);
@@ -125,6 +148,9 @@ int main()
             }
         }
     }
+    
+    // File automatically closes when csvFile goes out of scope (RAII)
+    std::cout << "\nCSV exported to frame_stats.csv\n";
 
     return 0;
 }
