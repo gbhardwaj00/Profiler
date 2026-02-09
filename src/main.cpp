@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <chrono>
 #include <thread>
 #include <random>
@@ -67,17 +68,17 @@ int main()
             int aiWorkUs = normal_us(rng) / 3;
             simulateWork(std::chrono::microseconds(aiWorkUs));
         }
-        // Render section (can have spikes)
-        {
-            ScopedTimer timer("Render", stats);
-            int renderWorkUs = is_spike(rng) ? spike_us(rng) : normal_us(rng) / 3;
-            simulateWork(std::chrono::microseconds(renderWorkUs));
-        }
         // Physics section 
         {
             ScopedTimer timer("Physics", stats);
             int physicsWorkUs = normal_us(rng) / 3;
             simulateWork(std::chrono::microseconds(physicsWorkUs));
+        }
+        // Render section (can have spikes)
+        {
+            ScopedTimer timer("Render", stats);
+            int renderWorkUs = is_spike(rng) ? spike_us(rng) : normal_us(rng) / 3;
+            simulateWork(std::chrono::microseconds(renderWorkUs));
         }
         
         const auto workEndAt = Clock::now();
@@ -95,20 +96,33 @@ int main()
         stats.addSample(workDuration.count(), totalDuration.count(), i);
         if (i % 30 == 0)
         {
-            std::cout << "Frame " << i << " | FPS: " << stats.getFPS()
-                      << " | Avg: " << stats.getAvgTotalUs() / 1000.0 << " ms"
-                      << " | Window Worst: " << stats.getWorstFrameWindow().totalDuration / 1000.0 << " ms at frame " << stats.getWorstFrameWindow().frameIndex
-                      << " | Overall Worst: " << stats.getWorstFrameOverall().totalDuration / 1000.0 << " ms at frame " << stats.getWorstFrameOverall().frameIndex
-                      << " | Window Size: " << stats.getWindowSize()
-                      << " | Capacity: " << stats.getCapacity()
-                      << " | Is Full: " << stats.isFull()
-                      << "\n";
-                      for (const auto& section : stats.getWorstFrameWindow().sections) {
-                        std::cout << "  " << section.name << ": " << section.duration / 1000.0 << " ms" << std::endl;
-                      }
-                      for (const auto& section : stats.getWorstFrameOverall().sections) {
-                        std::cout << "  " << section.name << ": " << section.duration / 1000.0 << " ms" << std::endl;
-                      }
+            std::cout << std::fixed << std::setprecision(2);
+            std::cout << "\n=== Frame " << i << " ===" << std::endl;
+            std::cout << "FPS: " << stats.getFPS() 
+                      << " | Avg Frame: " << stats.getAvgTotalUs() / 1000.0 << " ms"
+                      << " | Window: " << stats.getWindowSize() << "/" << stats.getCapacity() << std::endl;
+            
+            // Worst frame in window
+            const auto& worstWindow = stats.getWorstFrameWindow();
+            std::cout << "\nWorst (Window): Frame " << worstWindow.frameIndex 
+                      << " = " << worstWindow.totalDuration / 1000.0 << " ms" << std::endl;
+            if (!worstWindow.sections.empty()) {
+                for (const auto& section : worstWindow.sections) {
+                    std::cout << "  " << std::setw(10) << std::left << section.name 
+                              << ": " << std::setw(7) << std::right << section.duration / 1000.0 << " ms" << std::endl;
+                }
+            }
+            
+            // Worst frame overall
+            const auto& worstOverall = stats.getWorstFrameOverall();
+            std::cout << "Worst (Overall): Frame " << worstOverall.frameIndex 
+                      << " = " << worstOverall.totalDuration / 1000.0 << " ms" << std::endl;
+            if (!worstOverall.sections.empty()) {
+                for (const auto& section : worstOverall.sections) {
+                    std::cout << "  " << std::setw(10) << std::left << section.name 
+                              << ": " << std::setw(7) << std::right << section.duration / 1000.0 << " ms" << std::endl;
+                }
+            }
         }
     }
 
