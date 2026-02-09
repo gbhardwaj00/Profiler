@@ -3,6 +3,7 @@
 #include <thread>
 #include <random>
 #include <cstdint>
+#include "../profiler/FrameStats.h"
 
 using Clock = std::chrono::steady_clock;
 
@@ -37,7 +38,8 @@ static inline void spinUntil(Clock::time_point endTime)
 }
 
 int main()
-{
+{   
+    FrameStats stats;
     // ~60FPS
     const std::chrono::microseconds target_us(16666);
 
@@ -67,12 +69,17 @@ int main()
         // Log every 30 frames
         const auto frameEndAt = Clock::now();
         const auto totalDuration = std::chrono::duration_cast<std::chrono::microseconds>(frameEndAt - frameStartAt);
+        stats.addSample(workDuration.count(), totalDuration.count(), i);
         if (i % 30 == 0)
         {
-            std::cout
-                << "Planned " << plannedWorkUs / 1000.0 << " ms | "
-                << "Work " << workDuration.count() / 1000.0 << " ms | "
-                << "Total " << totalDuration.count() / 1000.0 << " ms\n";
+            std::cout << "Frame " << i << " | FPS: " << stats.getFPS()
+                      << " | Avg: " << stats.getAvgTotalUs() / 1000.0 << " ms"
+                      << " | Window Worst: " << stats.getWorstFrameWindow().totalDuration / 1000.0 << " ms"
+                      << " | Overall Worst: " << stats.getWorstFrameOverall().totalDuration / 1000.0 << " ms"
+                      << " | Window Size: " << stats.getWindowSize()
+                      << " | Capacity: " << stats.getCapacity()
+                      << " | Is Full: " << stats.isFull()
+                      << "\n";
         }
     }
 
