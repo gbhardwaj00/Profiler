@@ -94,17 +94,17 @@ int main()
         const auto frameEndAt = Clock::now();
         const auto totalDuration = std::chrono::duration_cast<std::chrono::microseconds>(frameEndAt - frameStartAt);
         stats.addSample(workDuration.count(), totalDuration.count(), i);
-        if (i % 30 == 0)
+        if (i % 30 == 0 || i == 299)
         {
             std::cout << std::fixed << std::setprecision(2);
             std::cout << "\n=== Frame " << i << " ===" << std::endl;
-            std::cout << "FPS: " << stats.getFPS() 
-                      << " | Avg Frame: " << stats.getAvgTotalUs() / 1000.0 << " ms"
+            std::cout << "Window Avg: " << stats.getAvgTotalUs() / 1000.0 << " ms" 
+                      << " | FPS: " << stats.getFPS() 
                       << " | Window: " << stats.getWindowSize() << "/" << stats.getCapacity() << std::endl;
             
-            // Worst frame in window
+            // Worst frame in rolling window
             const auto& worstWindow = stats.getWorstFrameWindow();
-            std::cout << "\nWorst (Window): Frame " << worstWindow.frameIndex 
+            std::cout << "Worst (Window): Frame " << worstWindow.frameIndex 
                       << " = " << worstWindow.totalDuration / 1000.0 << " ms" << std::endl;
             if (!worstWindow.sections.empty()) {
                 for (const auto& section : worstWindow.sections) {
