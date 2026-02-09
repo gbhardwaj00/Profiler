@@ -90,6 +90,8 @@ This creates `profiler_metrics.png` with 4 charts:
 3. **Section Breakdown** - Stacked area chart showing section contributions
 4. **Section Averages** - Bar chart comparing average section times
 
+![Profiler Metrics](profiler_metrics.png)
+
 The script also prints summary statistics to the console:
 - Total frames processed
 - Average frame time and FPS
@@ -118,19 +120,60 @@ The script also prints summary statistics to the console:
 
 ```
 === Frame 0 ===
-Window Avg Work Time: 7.50 ms | Window Avg Total Time: 16.67 ms | FPS: 60.00 | Window: 1/30
-
+Window Avg Work Time: 5.93 ms | Window Avg Total Time: 16.67 ms | FPS: 60.00 | Window: 1/30
 Worst (Window): Frame 0 = 16.67 ms
-  Input     :    0.50 ms
-  AI        :    2.33 ms
-  Physics   :    3.67 ms
-  Render    :    1.04 ms
-
+  Input     :    0.77 ms
+  AI        :    2.45 ms
+  Physics   :    1.95 ms
+  Render    :    0.75 ms
 Worst (Overall): Frame 0 = 16.67 ms
-  Input     :    0.50 ms
-  AI        :    2.33 ms
-  Physics   :    3.67 ms
-  Render    :    1.04 ms
+  Input     :    0.77 ms
+  AI        :    2.45 ms
+  Physics   :    1.95 ms
+  Render    :    0.75 ms
+
+=== Frame 30 ===
+Window Avg Work Time: 6.65 ms | Window Avg Total Time: 16.67 ms | FPS: 60.00 | Window: 30/30
+Worst (Window): Frame 30 = 16.67 ms
+  Input     :    0.71 ms
+  AI        :    0.97 ms
+  Physics   :    3.35 ms
+  Render    :    0.92 ms
+Worst (Overall): Frame 0 = 16.67 ms
+  Input     :    0.77 ms
+  AI        :    2.45 ms
+  Physics   :    1.95 ms
+  Render    :    0.75 ms
+
+=== Frame 60 ===
+Window Avg Work Time: 8.58 ms | Window Avg Total Time: 17.77 ms | FPS: 56.28 | Window: 30/30
+Worst (Window): Frame 43 = 28.69 ms
+  Input     :    0.49 ms
+  AI        :    1.91 ms
+  Physics   :    2.40 ms
+  Render    :   23.88 ms
+Worst (Overall): Frame 43 = 28.69 ms
+  Input     :    0.49 ms
+  AI        :    1.91 ms
+  Physics   :    2.40 ms
+  Render    :   23.88 ms
+
+  ...
+  ...
+  ...
+
+  === Frame 299 ===
+Window Avg Work Time: 7.51 ms | Window Avg Total Time: 17.34 ms | FPS: 57.66 | Window: 30/30
+Worst (Window): Frame 283 = 27.45 ms
+  Input     :    0.20 ms
+  AI        :    1.99 ms
+  Physics   :    1.92 ms
+  Render    :   23.33 ms
+Worst (Overall): Frame 43 = 28.69 ms
+  Input     :    0.49 ms
+  AI        :    1.91 ms
+  Physics   :    2.40 ms
+  Render    :   23.88 ms
 ```
 
 ## Technical Details
