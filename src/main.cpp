@@ -59,7 +59,7 @@ int main()
         // Input processing
         {
             ScopedTimer timer("Input", stats);
-            int inputWorkUs = 200; // Fixed small amount
+            int inputWorkUs = 500; // Fixed small amount
             simulateWork(std::chrono::microseconds(inputWorkUs));
         }
         // AI processing
@@ -71,7 +71,7 @@ int main()
         // Physics section 
         {
             ScopedTimer timer("Physics", stats);
-            int physicsWorkUs = normal_us(rng) / 3;
+            int physicsWorkUs = normal_us(rng) / 2;
             simulateWork(std::chrono::microseconds(physicsWorkUs));
         }
         // Render section (can have spikes)
@@ -98,7 +98,7 @@ int main()
         {
             std::cout << std::fixed << std::setprecision(2);
             std::cout << "\n=== Frame " << i << " ===" << std::endl;
-            std::cout << "Window Avg: " << stats.getAvgTotalUs() / 1000.0 << " ms" 
+            std::cout << "Window Avg Work Time: " << stats.getAvgWorkUs() / 1000.0 << " ms" << " | Window Avg Total Time: " << stats.getAvgTotalUs() / 1000.0 << " ms" 
                       << " | FPS: " << stats.getFPS() 
                       << " | Window: " << stats.getWindowSize() << "/" << stats.getCapacity() << std::endl;
             
