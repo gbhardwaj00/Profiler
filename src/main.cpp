@@ -65,7 +65,7 @@ int main()
         // Input processing
         {
             ScopedTimer timer("Input", stats);
-            int inputWorkUs = 500; // Fixed small amount
+            int inputWorkUs = normal_us(rng) / 10;
             simulateWork(std::chrono::microseconds(inputWorkUs));
         }
         // AI processing
