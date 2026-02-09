@@ -55,11 +55,11 @@ void FrameStats::reset() {
 }
 
 int64_t FrameStats::getAvgWorkUs() const {
-    return sumWorkUs / count;
+    return count > 0 ? sumWorkUs / count : 0;
 }
 
 int64_t FrameStats::getAvgTotalUs() const {
-    return sumTotalUs / count;
+    return count > 0 ? sumTotalUs / count : 0;
 }
 
 FrameSample FrameStats::getWorstFrameOverall() const {
@@ -71,7 +71,8 @@ FrameSample FrameStats::getWorstFrameWindow() const {
 }
 
 double FrameStats::getFPS() const {
-    return 1000000.0 / getAvgTotalUs();
+    int64_t avg = getAvgTotalUs();
+    return avg > 0 ? 1000000.0 / avg : 0.0;
 }
 
 size_t FrameStats::getWindowSize() const {
