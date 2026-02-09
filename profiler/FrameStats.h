@@ -2,12 +2,18 @@
 #include <vector>
 #include <cstdint>
 #include <cstddef>
+#include <string>
 
+struct SectionSample {
+    std::string name;
+    int64_t duration;
+};
 struct FrameSample
 {
     int64_t workDuration;
     int64_t totalDuration;
     size_t frameIndex;
+    std::vector<SectionSample> sections;
 };
 
 class FrameStats
@@ -22,11 +28,13 @@ private:
     FrameSample worstFrameWindow = {};
     FrameSample worstFrameOverall = {};
     void recalculateWorstFrameWindow();
+    std::vector<SectionSample> currentFrameSections;
 
 public:
     FrameStats();
     void addSample(int64_t workDuration, int64_t totalDuration, size_t currentFrameIndex);
     void reset();
+    void recordSection(const std::string& name, int64_t duration);
 
     // Metrics
     int64_t getAvgWorkUs() const;

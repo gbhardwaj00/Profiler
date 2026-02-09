@@ -13,17 +13,19 @@ void FrameStats::addSample(int64_t workDuration, int64_t totalDuration, size_t c
         sumTotalUs -= frames[writeIndex].totalDuration;
     }
     frames[writeIndex] = FrameSample{workDuration, totalDuration, currentFrameIndex};
+    frames[writeIndex].sections = std::move(currentFrameSections);  // Move sections, avoid copy
+    currentFrameSections.clear();  // Clear for next frame
     sumWorkUs += workDuration;
     sumTotalUs += totalDuration;
 
-    // Compare to overall worst frame
+    // Compare to overall worst frame (copy from frames[writeIndex] to include sections)
     if (totalDuration > worstFrameOverall.totalDuration){
-        worstFrameOverall = FrameSample{workDuration, totalDuration, currentFrameIndex};
+        worstFrameOverall = frames[writeIndex];
     }
 
-    // Compare to worst frame in window
+    // Compare to worst frame in window (copy from frames[writeIndex] to include sections)
     if (totalDuration > worstFrameWindow.totalDuration){
-        worstFrameWindow = FrameSample{workDuration, totalDuration, currentFrameIndex};
+        worstFrameWindow = frames[writeIndex];
     }
 
     // Recalculate worst frame in window it is not a part of the window anymore
@@ -52,6 +54,11 @@ void FrameStats::reset() {
     sumTotalUs = 0;
     worstFrameWindow = {};
     worstFrameOverall = {};
+    currentFrameSections.clear();
+}
+
+void FrameStats::recordSection(const std::string& name, int64_t duration) {
+    currentFrameSections.push_back({name, duration});
 }
 
 int64_t FrameStats::getAvgWorkUs() const {

@@ -74,8 +74,8 @@ int main()
         {
             std::cout << "Frame " << i << " | FPS: " << stats.getFPS()
                       << " | Avg: " << stats.getAvgTotalUs() / 1000.0 << " ms"
-                      << " | Window Worst: " << stats.getWorstFrameWindow().totalDuration / 1000.0 << " ms"
-                      << " | Overall Worst: " << stats.getWorstFrameOverall().totalDuration / 1000.0 << " ms"
+                      << " | Window Worst: " << stats.getWorstFrameWindow().totalDuration / 1000.0 << " ms at frame " << stats.getWorstFrameWindow().frameIndex
+                      << " | Overall Worst: " << stats.getWorstFrameOverall().totalDuration / 1000.0 << " ms at frame " << stats.getWorstFrameOverall().frameIndex
                       << " | Window Size: " << stats.getWindowSize()
                       << " | Capacity: " << stats.getCapacity()
                       << " | Is Full: " << stats.isFull()
