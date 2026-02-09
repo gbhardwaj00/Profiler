@@ -4,6 +4,7 @@
 #include <random>
 #include <cstdint>
 #include "../profiler/FrameStats.h"
+#include "../profiler/ScopedTimer.h"
 
 using Clock = std::chrono::steady_clock;
 
@@ -54,9 +55,31 @@ int main()
         const auto frameStartAt = Clock::now();
         const auto frameEndTarget = frameStartAt + target_us;
 
-        // Simulate work with occaisonal spikes
-        const int plannedWorkUs = is_spike(rng) ? spike_us(rng) : normal_us(rng);
-        simulateWork(std::chrono::microseconds(plannedWorkUs));
+        // Input processing
+        {
+            ScopedTimer timer("Input", stats);
+            int inputWorkUs = 200; // Fixed small amount
+            simulateWork(std::chrono::microseconds(inputWorkUs));
+        }
+        // AI processing
+        {
+            ScopedTimer timer("AI", stats);
+            int aiWorkUs = normal_us(rng) / 3;
+            simulateWork(std::chrono::microseconds(aiWorkUs));
+        }
+        // Render section (can have spikes)
+        {
+            ScopedTimer timer("Render", stats);
+            int renderWorkUs = is_spike(rng) ? spike_us(rng) : normal_us(rng) / 3;
+            simulateWork(std::chrono::microseconds(renderWorkUs));
+        }
+        // Physics section 
+        {
+            ScopedTimer timer("Physics", stats);
+            int physicsWorkUs = normal_us(rng) / 3;
+            simulateWork(std::chrono::microseconds(physicsWorkUs));
+        }
+        
         const auto workEndAt = Clock::now();
         const auto workDuration = std::chrono::duration_cast<std::chrono::microseconds>(workEndAt - frameStartAt);
 
@@ -80,6 +103,12 @@ int main()
                       << " | Capacity: " << stats.getCapacity()
                       << " | Is Full: " << stats.isFull()
                       << "\n";
+                      for (const auto& section : stats.getWorstFrameWindow().sections) {
+                        std::cout << "  " << section.name << ": " << section.duration / 1000.0 << " ms" << std::endl;
+                      }
+                      for (const auto& section : stats.getWorstFrameOverall().sections) {
+                        std::cout << "  " << section.name << ": " << section.duration / 1000.0 << " ms" << std::endl;
+                      }
         }
     }
 

@@ -20,7 +20,7 @@ class FrameStats
 {
 private:
     std::vector<FrameSample> frames;
-    constexpr static size_t bufferSize = 60;
+    constexpr static size_t bufferSize = 30;
     size_t writeIndex = 0;
     size_t count = 0;
     int64_t sumWorkUs = 0;
